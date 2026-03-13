@@ -52,6 +52,7 @@ pub enum Category {
     Security,
     Complexity,
     Format,
+    Gitignore,
 }
 
 impl fmt::Display for Category {
@@ -62,6 +63,7 @@ impl fmt::Display for Category {
             Self::Security => write!(f, "security"),
             Self::Complexity => write!(f, "complexity"),
             Self::Format => write!(f, "fmt"),
+            Self::Gitignore => write!(f, "gitignore"),
         }
     }
 }

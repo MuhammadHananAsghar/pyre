@@ -388,6 +388,83 @@ static RULES: &[RuleDoc] = &[
         example_good: "x = some_very_long_function_name(\n    with_many_arguments,\n    that_makes_line_shorter,\n)",
         fixable: false,
     },
+    // ── Gitignore ────────────────────────────────────────────────────────
+    RuleDoc {
+        code: "GIT001",
+        name: "missing-gitignore",
+        category: "Gitignore",
+        severity: "Error",
+        summary: "No `.gitignore` file found in the project root.",
+        detail: "Every project should have a `.gitignore` to prevent committing build \
+                 artifacts, secrets, and temporary files. Without one, sensitive files like \
+                 `.env` or `__pycache__` may end up in version control.",
+        example_bad: "# No .gitignore file in project",
+        example_good: "ignyt gitignore --init",
+        fixable: false,
+    },
+    RuleDoc {
+        code: "GIT002",
+        name: "missing-python-patterns",
+        category: "Gitignore",
+        severity: "Warning",
+        summary: "Missing essential Python ignore patterns.",
+        detail: "Python projects should ignore `__pycache__/`, `*.pyc`, `.env`, `*.egg-info/`, \
+                 `dist/`, `build/`, and `venv/` at minimum. These patterns prevent build \
+                 artifacts and environment files from being committed.",
+        example_bad: "# .gitignore with only:\n*.log",
+        example_good: "__pycache__/\n*.pyc\n.env\ndist/\nbuild/\nvenv/\n*.egg-info/",
+        fixable: false,
+    },
+    RuleDoc {
+        code: "GIT003",
+        name: "duplicate-entry",
+        category: "Gitignore",
+        severity: "Hint",
+        summary: "Duplicate entry in .gitignore.",
+        detail: "The same pattern appears more than once in `.gitignore`. While harmless, \
+                 duplicates add clutter and can cause confusion during maintenance.",
+        example_bad: "__pycache__/\n*.pyc\n__pycache__/",
+        example_good: "__pycache__/\n*.pyc",
+        fixable: false,
+    },
+    RuleDoc {
+        code: "GIT004",
+        name: "invalid-pattern",
+        category: "Gitignore",
+        severity: "Warning",
+        summary: "Invalid or problematic .gitignore pattern.",
+        detail: "Patterns with trailing whitespace, whitespace-only lines, or invalid glob \
+                 syntax (`***`) can cause unexpected behavior. Git treats trailing spaces as \
+                 part of the pattern, and `***` is not a valid glob.",
+        example_bad: "*.pyc   \n   \n***/foo",
+        example_good: "*.pyc\n\n**/foo",
+        fixable: false,
+    },
+    RuleDoc {
+        code: "GIT005",
+        name: "overly-broad-pattern",
+        category: "Gitignore",
+        severity: "Error",
+        summary: "Pattern is too broad and may ignore important files.",
+        detail: "Patterns like `*.py`, `src/`, `*.json`, or `*` will ignore files that \
+                 should be tracked. These are almost always mistakes that can cause lost work.",
+        example_bad: "*.py\nsrc/\n*",
+        example_good: "*.pyc\ndist/\nbuild/",
+        fixable: false,
+    },
+    RuleDoc {
+        code: "GIT006",
+        name: "missing-secrets-pattern",
+        category: "Gitignore",
+        severity: "Warning",
+        summary: "Missing patterns for secret/credential files.",
+        detail: "Files like `.env`, `.env.local`, `*.pem`, and `*.key` often contain secrets. \
+                 If they aren't in `.gitignore`, they risk being committed to version control \
+                 and potentially exposed publicly.",
+        example_bad: "# .gitignore without any secrets patterns",
+        example_good: ".env\n.env.local\n*.pem\n*.key",
+        fixable: false,
+    },
 ];
 
 /// Print detailed documentation for a single rule.

@@ -6,6 +6,7 @@
 mod clean;
 mod commands;
 mod explain;
+mod gitignore;
 mod output;
 mod watch;
 
@@ -102,6 +103,15 @@ pub enum Command {
         /// Dry run — show what would be removed without deleting.
         #[arg(long, short = 'n')]
         dry_run: bool,
+    },
+    /// Validate .gitignore for Python best practices.
+    #[command(name = "gitignore")]
+    Gitignore {
+        /// Project directory to check (defaults to current directory).
+        path: Option<PathBuf>,
+        /// Generate a default Python .gitignore file.
+        #[arg(long)]
+        init: bool,
     },
 }
 

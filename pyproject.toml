@@ -4,7 +4,7 @@ build-backend = "maturin"
 
 [project]
 name = "ignyt"
-version = "0.1.0"
+version = "0.2.0"
 description = "The fastest Python code quality engine — type checking, security scanning, dead code detection, complexity analysis & auto-fix in one Rust binary. Replaces mypy, flake8, bandit, vulture, radon, black & isort."
 readme = "README.md"
 license = { text = "MIT" }

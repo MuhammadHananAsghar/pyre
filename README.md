@@ -29,6 +29,7 @@ Ignyt is a standalone Python code quality engine written in Rust. It performs **
 | Linting | `flake8` | `ignyt check` |
 | Auto-fixing | `black` + manual | `ignyt fix` |
 | Cleanup | `pyclean` | `ignyt clean` |
+| .gitignore validation | manual review | `ignyt gitignore` |
 | **Install** | `pip install mypy flake8 bandit vulture radon black isort` | `pip install ignyt` |
 | **Config files** | 7 config files | 1 `ignyt.toml` (optional) |
 | **Speed** | 30-60 seconds on large projects | **< 1 second** |
@@ -74,6 +75,10 @@ ignyt check --format json src/
 # Remove Python debris (__pycache__, .pyc, .egg-info, etc.)
 ignyt clean
 ignyt clean --dry-run    # Preview what would be removed
+
+# Validate .gitignore
+ignyt gitignore          # Check for issues
+ignyt gitignore --init   # Generate a Python .gitignore
 ```
 
 ## What It Catches
@@ -142,6 +147,19 @@ Enforces consistent code style.
 | FMT001 | unsorted-imports | Imports not sorted alphabetically |
 | FMT002 | line-too-long | Line exceeds max length |
 
+### Gitignore (GIT001-GIT006)
+
+Validates your `.gitignore` for Python best practices.
+
+| Code | Name | Description |
+|------|------|-------------|
+| GIT001 | missing-gitignore | No `.gitignore` file found |
+| GIT002 | missing-python-patterns | Missing essential Python ignore patterns |
+| GIT003 | duplicate-entry | Same pattern appears multiple times |
+| GIT004 | invalid-pattern | Trailing whitespace, invalid globs, etc. |
+| GIT005 | overly-broad-pattern | Pattern too broad (e.g., `*.py`, `src/`) |
+| GIT006 | missing-secrets-pattern | Missing `.env`, `*.pem`, `*.key` patterns |
+
 ## Auto-Fix
 
 Ignyt can automatically fix safe issues:
@@ -166,6 +184,18 @@ ignyt clean src/      # Clean specific directory
 ```
 
 **What it removes:** `__pycache__`, `.pyc`, `.pyo`, `.egg-info`, `.pytest_cache`, `.mypy_cache`, `.ruff_cache`, `.tox`, `.nox`, `.eggs`, `.pytype`, `.hypothesis`
+
+## Gitignore Validation
+
+Validate your `.gitignore` follows Python best practices:
+
+```bash
+ignyt gitignore          # Check for issues
+ignyt gitignore --init   # Generate a Python .gitignore
+ignyt gitignore ./myapp  # Check a specific project
+```
+
+**What it checks:** missing essential patterns, duplicate entries, trailing whitespace, overly broad rules (`*.py`, `src/`), missing secrets patterns (`.env`, `*.pem`)
 
 ## Configuration
 

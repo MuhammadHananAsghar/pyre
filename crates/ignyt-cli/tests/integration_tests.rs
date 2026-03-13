@@ -534,3 +534,284 @@ fn test_clean_empty_directory_no_crash() {
 
     let _ = fs::remove_dir_all(&tmp);
 }
+
+// =========================================================================
+// Gitignore validation
+// =========================================================================
+
+#[test]
+fn test_gitignore_missing_file() {
+    // A directory with no .gitignore should report GIT001.
+    let tmp = std::env::temp_dir().join("ignyt_test_gitignore_missing");
+    let _ = fs::remove_dir_all(&tmp);
+    fs::create_dir_all(&tmp).unwrap();
+
+    let mut cmd = Command::cargo_bin("ignyt").expect("binary must build");
+    cmd.arg("gitignore").arg(&tmp);
+
+    cmd.assert()
+        .code(predicate::eq(1))
+        .stdout(predicate::str::contains("GIT001"));
+
+    let _ = fs::remove_dir_all(&tmp);
+}
+
+#[test]
+fn test_gitignore_good_file_passes() {
+    // A well-formed .gitignore should produce no errors.
+    let tmp = std::env::temp_dir().join("ignyt_test_gitignore_good");
+    let _ = fs::remove_dir_all(&tmp);
+    fs::create_dir_all(&tmp).unwrap();
+
+    let content = "\
+__pycache__/
+*.pyc
+*.pyo
+.env
+.env.local
+*.pem
+*.key
+*.egg-info/
+dist/
+build/
+venv/
+.venv/
+.pytest_cache/
+.mypy_cache/
+";
+    fs::write(tmp.join(".gitignore"), content).unwrap();
+
+    let mut cmd = Command::cargo_bin("ignyt").expect("binary must build");
+    cmd.arg("gitignore").arg(&tmp);
+
+    cmd.assert()
+        .success()
+        .stdout(predicate::str::contains("looks good"));
+
+    let _ = fs::remove_dir_all(&tmp);
+}
+
+#[test]
+fn test_gitignore_missing_python_patterns() {
+    // A .gitignore missing essential patterns should report GIT002.
+    let tmp = std::env::temp_dir().join("ignyt_test_gitignore_missing_py");
+    let _ = fs::remove_dir_all(&tmp);
+    fs::create_dir_all(&tmp).unwrap();
+
+    let content = "\
+.env
+.env.local
+*.pem
+*.key
+*.log
+";
+    fs::write(tmp.join(".gitignore"), content).unwrap();
+
+    let mut cmd = Command::cargo_bin("ignyt").expect("binary must build");
+    cmd.arg("gitignore").arg(&tmp);
+
+    cmd.assert().stdout(predicate::str::contains("GIT002"));
+
+    let _ = fs::remove_dir_all(&tmp);
+}
+
+#[test]
+fn test_gitignore_duplicate_entries() {
+    // Duplicate entries should report GIT003.
+    let tmp = std::env::temp_dir().join("ignyt_test_gitignore_dups");
+    let _ = fs::remove_dir_all(&tmp);
+    fs::create_dir_all(&tmp).unwrap();
+
+    let content = "\
+__pycache__/
+*.pyc
+.env
+.env.local
+*.pem
+*.key
+*.egg-info/
+dist/
+build/
+venv/
+__pycache__/
+dist/
+";
+    fs::write(tmp.join(".gitignore"), content).unwrap();
+
+    let mut cmd = Command::cargo_bin("ignyt").expect("binary must build");
+    cmd.arg("gitignore").arg(&tmp);
+
+    cmd.assert().stdout(predicate::str::contains("GIT003"));
+
+    let _ = fs::remove_dir_all(&tmp);
+}
+
+#[test]
+fn test_gitignore_trailing_whitespace() {
+    // Trailing whitespace should report GIT004.
+    let tmp = std::env::temp_dir().join("ignyt_test_gitignore_ws");
+    let _ = fs::remove_dir_all(&tmp);
+    fs::create_dir_all(&tmp).unwrap();
+
+    let content = "__pycache__/  \n*.pyc\n.env\n.env.local\n*.pem\n*.key\n*.egg-info/\ndist/\nbuild/\nvenv/\n";
+    fs::write(tmp.join(".gitignore"), content).unwrap();
+
+    let mut cmd = Command::cargo_bin("ignyt").expect("binary must build");
+    cmd.arg("gitignore").arg(&tmp);
+
+    cmd.assert().stdout(predicate::str::contains("GIT004"));
+
+    let _ = fs::remove_dir_all(&tmp);
+}
+
+#[test]
+fn test_gitignore_overly_broad_pattern() {
+    // Overly broad patterns like *.py should report GIT005.
+    let tmp = std::env::temp_dir().join("ignyt_test_gitignore_broad");
+    let _ = fs::remove_dir_all(&tmp);
+    fs::create_dir_all(&tmp).unwrap();
+
+    let content = "\
+__pycache__/
+*.pyc
+*.py
+.env
+.env.local
+*.pem
+*.key
+*.egg-info/
+dist/
+build/
+venv/
+";
+    fs::write(tmp.join(".gitignore"), content).unwrap();
+
+    let mut cmd = Command::cargo_bin("ignyt").expect("binary must build");
+    cmd.arg("gitignore").arg(&tmp);
+
+    cmd.assert()
+        .code(predicate::eq(1))
+        .stdout(predicate::str::contains("GIT005"));
+
+    let _ = fs::remove_dir_all(&tmp);
+}
+
+#[test]
+fn test_gitignore_missing_secrets() {
+    // Missing .env and secrets patterns should report GIT006.
+    let tmp = std::env::temp_dir().join("ignyt_test_gitignore_secrets");
+    let _ = fs::remove_dir_all(&tmp);
+    fs::create_dir_all(&tmp).unwrap();
+
+    let content = "\
+__pycache__/
+*.pyc
+*.egg-info/
+dist/
+build/
+venv/
+";
+    fs::write(tmp.join(".gitignore"), content).unwrap();
+
+    let mut cmd = Command::cargo_bin("ignyt").expect("binary must build");
+    cmd.arg("gitignore").arg(&tmp);
+
+    cmd.assert().stdout(predicate::str::contains("GIT006"));
+
+    let _ = fs::remove_dir_all(&tmp);
+}
+
+#[test]
+fn test_gitignore_invalid_glob() {
+    // *** pattern should report GIT004.
+    let tmp = std::env::temp_dir().join("ignyt_test_gitignore_glob");
+    let _ = fs::remove_dir_all(&tmp);
+    fs::create_dir_all(&tmp).unwrap();
+
+    let content = "\
+__pycache__/
+*.pyc
+.env
+.env.local
+*.pem
+*.key
+*.egg-info/
+dist/
+build/
+venv/
+***/foo
+";
+    fs::write(tmp.join(".gitignore"), content).unwrap();
+
+    let mut cmd = Command::cargo_bin("ignyt").expect("binary must build");
+    cmd.arg("gitignore").arg(&tmp);
+
+    cmd.assert().stdout(predicate::str::contains("GIT004"));
+
+    let _ = fs::remove_dir_all(&tmp);
+}
+
+#[test]
+fn test_gitignore_star_alone_is_critical() {
+    // A lone `*` should report GIT005 as critical.
+    let tmp = std::env::temp_dir().join("ignyt_test_gitignore_star");
+    let _ = fs::remove_dir_all(&tmp);
+    fs::create_dir_all(&tmp).unwrap();
+
+    let content = "*\n";
+    fs::write(tmp.join(".gitignore"), content).unwrap();
+
+    let mut cmd = Command::cargo_bin("ignyt").expect("binary must build");
+    cmd.arg("gitignore").arg(&tmp);
+
+    cmd.assert()
+        .code(predicate::eq(1))
+        .stdout(predicate::str::contains("GIT005"));
+
+    let _ = fs::remove_dir_all(&tmp);
+}
+
+#[test]
+fn test_gitignore_init_creates_file() {
+    let tmp = std::env::temp_dir().join("ignyt_test_gitignore_init");
+    let _ = fs::remove_dir_all(&tmp);
+    fs::create_dir_all(&tmp).unwrap();
+
+    let mut cmd = Command::cargo_bin("ignyt").expect("binary must build");
+    cmd.arg("gitignore").arg("--init").arg(&tmp);
+
+    cmd.assert()
+        .success()
+        .stdout(predicate::str::contains("created .gitignore"));
+
+    // The file should exist now.
+    assert!(tmp.join(".gitignore").exists());
+
+    // Read it and check it has essential patterns.
+    let content = fs::read_to_string(tmp.join(".gitignore")).unwrap();
+    assert!(content.contains("__pycache__/"));
+    assert!(content.contains("*.py[cod]"));
+    assert!(content.contains(".env"));
+    assert!(content.contains("venv/"));
+    assert!(content.contains("dist/"));
+
+    let _ = fs::remove_dir_all(&tmp);
+}
+
+#[test]
+fn test_gitignore_explain_rules() {
+    // Verify GIT rules show up in explain.
+    let mut cmd = Command::cargo_bin("ignyt").expect("binary must build");
+    cmd.arg("explain").arg("GIT001");
+
+    cmd.assert()
+        .success()
+        .stdout(predicate::str::contains("missing-gitignore"));
+
+    let mut cmd2 = Command::cargo_bin("ignyt").expect("binary must build");
+    cmd2.arg("explain").arg("GIT005");
+
+    cmd2.assert()
+        .success()
+        .stdout(predicate::str::contains("overly-broad-pattern"));
+}

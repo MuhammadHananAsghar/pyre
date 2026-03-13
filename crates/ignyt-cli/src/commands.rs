@@ -67,6 +67,19 @@ pub fn run(cli: Cli) -> IgnytResult<bool> {
             crate::clean::clean(&clean_paths, *dry_run);
             return Ok(false);
         }
+        Command::Gitignore { path, init } => {
+            let project_path = path.clone().unwrap_or_else(|| cwd.clone());
+            if *init {
+                crate::gitignore::init_gitignore(&project_path);
+                return Ok(false);
+            }
+            let bag = crate::gitignore::validate_gitignore(&project_path);
+            let has_errors = bag
+                .diagnostics()
+                .iter()
+                .any(|d| matches!(d.severity, Severity::Error | Severity::Critical));
+            return Ok(has_errors);
+        }
         _ => {}
     }
 
@@ -91,7 +104,10 @@ pub fn run(cli: Cli) -> IgnytResult<bool> {
             }
         }
         // Explain and Watch are handled above and return early.
-        Command::Explain { .. } | Command::Watch { .. } | Command::Clean { .. } => unreachable!(),
+        Command::Explain { .. }
+        | Command::Watch { .. }
+        | Command::Clean { .. }
+        | Command::Gitignore { .. } => unreachable!(),
     };
 
     // Collect all Python files.
@@ -143,7 +159,10 @@ pub fn run(cli: Cli) -> IgnytResult<bool> {
         Command::Fix { .. } => {
             run_fix(&parsed_files, &output_format);
         }
-        Command::Explain { .. } | Command::Watch { .. } | Command::Clean { .. } => unreachable!(),
+        Command::Explain { .. }
+        | Command::Watch { .. }
+        | Command::Clean { .. }
+        | Command::Gitignore { .. } => unreachable!(),
     }
 
     let elapsed = start.elapsed();
