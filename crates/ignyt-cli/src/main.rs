@@ -3,6 +3,7 @@
 //! The fastest Python code quality engine in the world.
 //! Entry point for the `ignyt` binary.
 
+mod clean;
 mod commands;
 mod explain;
 mod output;
@@ -93,6 +94,14 @@ pub enum Command {
     Watch {
         /// Files or directories to watch.
         paths: Vec<PathBuf>,
+    },
+    /// Remove Python debris (__pycache__, .pyc, .pyo, .egg-info, etc.).
+    Clean {
+        /// Directories to clean (defaults to current directory).
+        paths: Vec<PathBuf>,
+        /// Dry run — show what would be removed without deleting.
+        #[arg(long, short = 'n')]
+        dry_run: bool,
     },
 }
 

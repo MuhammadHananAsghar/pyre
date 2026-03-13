@@ -24,6 +24,12 @@ pip install ignyt
 # Run all checks on your project
 ignyt check src/
 
+# Check a single file
+ignyt check app/main.py
+
+# Check everything in current directory
+ignyt check .
+
 # Run specific engines
 ignyt types src/
 ignyt security src/
@@ -41,6 +47,12 @@ ignyt watch src/
 
 # JSON output for CI/CD integration
 ignyt check --format json src/
+
+# Remove Python debris (__pycache__, .pyc, .egg-info, etc.)
+ignyt clean
+
+# Preview what would be removed
+ignyt clean --dry-run
 ```
 
 ## Diagnostic Rules

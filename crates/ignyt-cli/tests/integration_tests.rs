@@ -6,6 +6,7 @@
 
 use assert_cmd::Command;
 use predicates::prelude::*;
+use std::fs;
 use std::path::PathBuf;
 
 /// Path to the shared test fixtures directory (repo root / tests / fixtures).
@@ -392,4 +393,144 @@ fn test_explain_unknown_rule() {
     cmd.assert()
         .success()
         .stdout(predicate::str::contains("Unknown rule code"));
+}
+
+// =========================================================================
+// Single file and dot-path support
+// =========================================================================
+
+#[test]
+fn test_single_file_check() {
+    // Passing a single .py file directly should work.
+    let mut cmd = Command::cargo_bin("ignyt").expect("binary must build");
+    cmd.arg("check").arg(fixture("easy_unused_imports.py"));
+
+    cmd.assert()
+        .stdout(predicate::str::contains("DEAD004"))
+        .stdout(predicate::str::contains("file"));
+}
+
+#[test]
+fn test_dot_path_checks_directory() {
+    // Running with "." from the fixtures directory should find Python files.
+    let mut cmd = Command::cargo_bin("ignyt").expect("binary must build");
+    cmd.arg("check").arg(fixtures_dir());
+
+    cmd.assert().stdout(predicate::str::contains("file"));
+}
+
+// =========================================================================
+// Clean subcommand
+// =========================================================================
+
+#[test]
+fn test_clean_dry_run_finds_pycache() {
+    // Create a temp directory with __pycache__ inside it.
+    let tmp = std::env::temp_dir().join("ignyt_test_clean_dry");
+    let pycache = tmp.join("__pycache__");
+    let _ = fs::remove_dir_all(&tmp);
+    fs::create_dir_all(&pycache).unwrap();
+    fs::write(pycache.join("mod.cpython-311.pyc"), b"fake").unwrap();
+
+    let mut cmd = Command::cargo_bin("ignyt").expect("binary must build");
+    cmd.arg("clean").arg("--dry-run").arg(&tmp);
+
+    cmd.assert()
+        .success()
+        .stdout(predicate::str::contains("would remove"))
+        .stdout(predicate::str::contains("__pycache__"));
+
+    // Dry run should NOT delete the directory.
+    assert!(
+        pycache.exists(),
+        "__pycache__ should still exist after dry run"
+    );
+
+    // Cleanup.
+    let _ = fs::remove_dir_all(&tmp);
+}
+
+#[test]
+fn test_clean_removes_pycache() {
+    // Create a temp directory with __pycache__ and a stray .pyc file.
+    let tmp = std::env::temp_dir().join("ignyt_test_clean_real");
+    let pycache = tmp.join("__pycache__");
+    let _ = fs::remove_dir_all(&tmp);
+    fs::create_dir_all(&pycache).unwrap();
+    fs::write(pycache.join("mod.cpython-311.pyc"), b"fake").unwrap();
+    fs::write(tmp.join("stray.pyc"), b"stray").unwrap();
+
+    let mut cmd = Command::cargo_bin("ignyt").expect("binary must build");
+    cmd.arg("clean").arg(&tmp);
+
+    cmd.assert()
+        .success()
+        .stdout(predicate::str::contains("removed"));
+
+    // Both should be gone.
+    assert!(!pycache.exists(), "__pycache__ should be deleted");
+    assert!(
+        !tmp.join("stray.pyc").exists(),
+        "stray .pyc should be deleted"
+    );
+
+    // Cleanup.
+    let _ = fs::remove_dir_all(&tmp);
+}
+
+#[test]
+fn test_clean_removes_pytest_cache() {
+    let tmp = std::env::temp_dir().join("ignyt_test_clean_pytest");
+    let pytest_cache = tmp.join(".pytest_cache");
+    let _ = fs::remove_dir_all(&tmp);
+    fs::create_dir_all(&pytest_cache).unwrap();
+    fs::write(pytest_cache.join("README.md"), b"pytest cache").unwrap();
+
+    let mut cmd = Command::cargo_bin("ignyt").expect("binary must build");
+    cmd.arg("clean").arg(&tmp);
+
+    cmd.assert()
+        .success()
+        .stdout(predicate::str::contains("removed"));
+
+    assert!(!pytest_cache.exists(), ".pytest_cache should be deleted");
+
+    let _ = fs::remove_dir_all(&tmp);
+}
+
+#[test]
+fn test_clean_removes_egg_info() {
+    let tmp = std::env::temp_dir().join("ignyt_test_clean_egg");
+    let egg_info = tmp.join("mypackage.egg-info");
+    let _ = fs::remove_dir_all(&tmp);
+    fs::create_dir_all(&egg_info).unwrap();
+    fs::write(egg_info.join("PKG-INFO"), b"info").unwrap();
+
+    let mut cmd = Command::cargo_bin("ignyt").expect("binary must build");
+    cmd.arg("clean").arg(&tmp);
+
+    cmd.assert()
+        .success()
+        .stdout(predicate::str::contains("removed"));
+
+    assert!(!egg_info.exists(), ".egg-info should be deleted");
+
+    let _ = fs::remove_dir_all(&tmp);
+}
+
+#[test]
+fn test_clean_empty_directory_no_crash() {
+    let tmp = std::env::temp_dir().join("ignyt_test_clean_empty");
+    let _ = fs::remove_dir_all(&tmp);
+    fs::create_dir_all(&tmp).unwrap();
+
+    let mut cmd = Command::cargo_bin("ignyt").expect("binary must build");
+    cmd.arg("clean").arg(&tmp);
+
+    cmd.assert()
+        .success()
+        .stdout(predicate::str::contains("0 director"))
+        .stdout(predicate::str::contains("0 file"));
+
+    let _ = fs::remove_dir_all(&tmp);
 }

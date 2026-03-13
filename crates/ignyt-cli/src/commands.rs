@@ -58,6 +58,15 @@ pub fn run(cli: Cli) -> IgnytResult<bool> {
             };
             return crate::watch::watch_and_check(&watch_paths, &output_format);
         }
+        Command::Clean { paths, dry_run } => {
+            let clean_paths = if paths.is_empty() {
+                vec![cwd.clone()]
+            } else {
+                paths.clone()
+            };
+            crate::clean::clean(&clean_paths, *dry_run);
+            return Ok(false);
+        }
         _ => {}
     }
 
@@ -82,7 +91,7 @@ pub fn run(cli: Cli) -> IgnytResult<bool> {
             }
         }
         // Explain and Watch are handled above and return early.
-        Command::Explain { .. } | Command::Watch { .. } => unreachable!(),
+        Command::Explain { .. } | Command::Watch { .. } | Command::Clean { .. } => unreachable!(),
     };
 
     // Collect all Python files.
@@ -134,7 +143,7 @@ pub fn run(cli: Cli) -> IgnytResult<bool> {
         Command::Fix { .. } => {
             run_fix(&parsed_files, &output_format);
         }
-        Command::Explain { .. } | Command::Watch { .. } => unreachable!(),
+        Command::Explain { .. } | Command::Watch { .. } | Command::Clean { .. } => unreachable!(),
     }
 
     let elapsed = start.elapsed();
