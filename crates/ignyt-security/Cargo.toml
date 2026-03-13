@@ -10,8 +10,6 @@ ignyt-ast = { workspace = true }
 ignyt-diagnostics = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
-tokio = { workspace = true }
-reqwest = { workspace = true }
 tracing = { workspace = true }
 
 [dev-dependencies]
