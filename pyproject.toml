@@ -1,0 +1,30 @@
+[build-system]
+requires = ["maturin>=1.0,<2.0"]
+build-backend = "maturin"
+
+[project]
+name = "ignyt"
+version = "0.1.0"
+description = "The fastest Python code quality engine in the world"
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.8"
+keywords = ["linter", "type-checker", "security", "dead-code", "formatter", "python"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Rust",
+    "Programming Language :: Python :: 3",
+    "Topic :: Software Development :: Quality Assurance",
+    "Topic :: Software Development :: Testing",
+]
+
+[project.urls]
+Repository = "https://github.com/MuhammadHananAsghar/ignyt"
+Issues = "https://github.com/MuhammadHananAsghar/ignyt/issues"
+
+[tool.maturin]
+bindings = "bin"
+manifest-path = "crates/ignyt-cli/Cargo.toml"
+strip = true

@@ -1,0 +1,16 @@
+[package]
+name = "ignyt-dead"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Dead code and unused symbol detector for Ignyt"
+
+[dependencies]
+ignyt-ast = { workspace = true }
+ignyt-diagnostics = { workspace = true }
+serde = { workspace = true }
+rayon = { workspace = true }
+tracing = { workspace = true }
+
+[dev-dependencies]
+insta = { workspace = true }

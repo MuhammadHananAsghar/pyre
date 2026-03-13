@@ -1,0 +1,16 @@
+[package]
+name = "ignyt-fix"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Auto-fix engine for Ignyt — applies safe, deterministic code transformations"
+
+[dependencies]
+ignyt-ast = { workspace = true }
+ignyt-diagnostics = { workspace = true }
+ignyt-dead = { workspace = true }
+ignyt-security = { workspace = true }
+ignyt-fmt = { workspace = true }
+
+[dev-dependencies]
+insta = { workspace = true }

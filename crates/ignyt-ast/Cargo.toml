@@ -1,0 +1,16 @@
+[package]
+name = "ignyt-ast"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Python AST parser and module graph builder for Ignyt"
+
+[dependencies]
+ignyt-diagnostics = { workspace = true }
+rustpython-parser = { workspace = true }
+serde = { workspace = true }
+miette = { workspace = true }
+tracing = { workspace = true }
+
+[dev-dependencies]
+insta = { workspace = true }
