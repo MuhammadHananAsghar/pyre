@@ -5,24 +5,51 @@ build-backend = "maturin"
 [project]
 name = "ignyt"
 version = "0.1.0"
-description = "The fastest Python code quality engine in the world"
+description = "The fastest Python code quality engine — type checking, security scanning, dead code detection, complexity analysis & auto-fix in one Rust binary. Replaces mypy, flake8, bandit, vulture, radon, black & isort."
 readme = "README.md"
 license = { text = "MIT" }
 requires-python = ">=3.8"
-keywords = ["linter", "type-checker", "security", "dead-code", "formatter", "python"]
+authors = [
+    { name = "Muhammad Hanan Asghar" },
+]
+keywords = [
+    "linter",
+    "type-checker",
+    "security",
+    "dead-code",
+    "formatter",
+    "python",
+    "static-analysis",
+    "code-quality",
+    "mypy",
+    "flake8",
+    "bandit",
+]
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Rust",
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Topic :: Software Development :: Quality Assurance",
     "Topic :: Software Development :: Testing",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Environment :: Console",
+    "Operating System :: OS Independent",
+    "Typing :: Typed",
 ]
 
 [project.urls]
+Homepage = "https://github.com/MuhammadHananAsghar/ignyt"
 Repository = "https://github.com/MuhammadHananAsghar/ignyt"
 Issues = "https://github.com/MuhammadHananAsghar/ignyt/issues"
+Changelog = "https://github.com/MuhammadHananAsghar/ignyt/releases"
 
 [tool.maturin]
 bindings = "bin"

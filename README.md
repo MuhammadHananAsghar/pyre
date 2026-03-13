@@ -1,26 +1,49 @@
-# Ignyt - The Fastest Python Code Quality Engine
+<p align="center">
+  <h1 align="center">Ignyt</h1>
+  <p align="center"><strong>The fastest Python code quality engine in the world.</strong></p>
+  <p align="center">
+    <a href="https://pypi.org/project/ignyt/"><img src="https://img.shields.io/pypi/v/ignyt?color=blue&label=PyPI" alt="PyPI"></a>
+    <a href="https://pypi.org/project/ignyt/"><img src="https://img.shields.io/pypi/pyversions/ignyt" alt="Python"></a>
+    <a href="https://github.com/MuhammadHananAsghar/ignyt/actions"><img src="https://github.com/MuhammadHananAsghar/ignyt/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+    <a href="https://github.com/MuhammadHananAsghar/ignyt/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="License"></a>
+  </p>
+</p>
 
-> **One binary. Zero config. Replaces mypy, flake8, bandit, vulture, radon, black, and isort.**
+---
 
-Ignyt is a standalone, self-contained Python code quality engine written in Rust. It performs type checking, security scanning, dead code detection, complexity analysis, formatting checks, and auto-fixing — all in a single binary that runs 10-100x faster than the tools it replaces.
+**One binary. Zero config. Replaces mypy, flake8, bandit, vulture, radon, black, and isort.**
 
-## Features
+Ignyt is a standalone Python code quality engine written in Rust. It performs **type checking**, **security scanning**, **dead code detection**, **complexity analysis**, **format checking**, **auto-fixing**, and **project cleanup** — all in a single binary that runs **10-100x faster** than the tools it replaces.
 
-- **Type Checking** — Missing annotations, incompatible defaults, missing returns, Optional safety, mutable defaults, redundant casts/isinstance
-- **Security Scanning** — Hardcoded credentials, SQL injection, shell injection, eval/exec, pickle, unsafe YAML, weak crypto, XML bombs, path traversal
-- **Dead Code Detection** — Unused imports, functions, classes, variables, arguments, unreachable code
-- **Complexity Analysis** — Cyclomatic complexity, cognitive complexity, argument count, nesting depth, line count
-- **Format Checking** — Import ordering, line length
-- **Auto-Fix** — Removes unused imports, fixes `yaml.load` → `yaml.safe_load`, sorts imports
-- **Watch Mode** — Re-runs checks on file changes
-- **Rule Documentation** — Built-in `ignyt explain <CODE>` for detailed rule descriptions
+---
+
+## Why Ignyt?
+
+| Problem | Before (multiple tools) | After (Ignyt) |
+|---------|------------------------|----------------|
+| Type checking | `mypy` | `ignyt types` |
+| Security scanning | `bandit` | `ignyt security` |
+| Dead code detection | `vulture` | `ignyt dead` |
+| Complexity analysis | `radon` | `ignyt complexity` |
+| Import sorting | `isort` | `ignyt fmt` |
+| Linting | `flake8` | `ignyt check` |
+| Auto-fixing | `black` + manual | `ignyt fix` |
+| Cleanup | `pyclean` | `ignyt clean` |
+| **Install** | `pip install mypy flake8 bandit vulture radon black isort` | `pip install ignyt` |
+| **Config files** | 7 config files | 1 `ignyt.toml` (optional) |
+| **Speed** | 30-60 seconds on large projects | **< 1 second** |
+
+## Installation
+
+```bash
+pip install ignyt
+```
+
+Works on **Linux**, **macOS**, and **Windows**. No Python dependencies. No compilation. Just install and run.
 
 ## Quick Start
 
 ```bash
-# Install via pip
-pip install ignyt
-
 # Run all checks on your project
 ignyt check src/
 
@@ -31,10 +54,10 @@ ignyt check app/main.py
 ignyt check .
 
 # Run specific engines
-ignyt types src/
-ignyt security src/
-ignyt dead src/
-ignyt complexity src/
+ignyt types src/         # Type checking only
+ignyt security src/      # Security scanning only
+ignyt dead src/          # Dead code detection only
+ignyt complexity src/    # Complexity analysis only
 
 # Auto-fix safe issues
 ignyt fix src/
@@ -42,7 +65,7 @@ ignyt fix src/
 # Get help on a specific rule
 ignyt explain SEC001
 
-# Watch mode
+# Watch mode — re-runs on file changes
 ignyt watch src/
 
 # JSON output for CI/CD integration
@@ -50,14 +73,15 @@ ignyt check --format json src/
 
 # Remove Python debris (__pycache__, .pyc, .egg-info, etc.)
 ignyt clean
-
-# Preview what would be removed
-ignyt clean --dry-run
+ignyt clean --dry-run    # Preview what would be removed
 ```
 
-## Diagnostic Rules
+## What It Catches
 
 ### Security (SEC001-SEC012)
+
+Catches vulnerabilities before they reach production.
+
 | Code | Name | Description |
 |------|------|-------------|
 | SEC001 | hardcoded-password | Hardcoded credentials in source code |
@@ -74,6 +98,9 @@ ignyt clean --dry-run
 | SEC012 | path-traversal | File path from unsanitized input |
 
 ### Type Checking (TYPE001-TYPE007)
+
+Finds type errors without running your code.
+
 | Code | Name | Description |
 |------|------|-------------|
 | TYPE001 | missing-return | Function with return annotation but no return |
@@ -85,6 +112,9 @@ ignyt clean --dry-run
 | TYPE007 | none-not-checked | Optional parameter used without None check |
 
 ### Dead Code (DEAD001-DEAD006)
+
+Eliminates unused code that bloats your project.
+
 | Code | Name | Description |
 |------|------|-------------|
 | DEAD001 | unused-function | Private function never called |
@@ -94,21 +124,52 @@ ignyt clean --dry-run
 | DEAD005 | unused-argument | Function argument never used |
 | DEAD006 | unreachable-code | Code after return/raise/break/continue |
 
-### Complexity (CMPLX001-CMPLX007)
+### Complexity (CMPLX001-CMPLX003)
+
+Keeps functions simple and maintainable.
+
 | Code | Name | Description |
 |------|------|-------------|
 | CMPLX001 | high-cyclomatic | Too many decision branches |
 | CMPLX003 | too-many-arguments | Too many function parameters |
 
 ### Format (FMT001-FMT002)
+
+Enforces consistent code style.
+
 | Code | Name | Description |
 |------|------|-------------|
 | FMT001 | unsorted-imports | Imports not sorted alphabetically |
 | FMT002 | line-too-long | Line exceeds max length |
 
+## Auto-Fix
+
+Ignyt can automatically fix safe issues:
+
+```bash
+ignyt fix src/
+```
+
+**What it fixes:**
+- Removes unused imports (`DEAD004`)
+- Converts `yaml.load()` to `yaml.safe_load()` (`SEC005`)
+- Sorts imports alphabetically (`FMT001`)
+
+## Project Cleanup
+
+Remove Python build debris instantly:
+
+```bash
+ignyt clean           # Remove all debris
+ignyt clean --dry-run # Preview what would be removed
+ignyt clean src/      # Clean specific directory
+```
+
+**What it removes:** `__pycache__`, `.pyc`, `.pyo`, `.egg-info`, `.pytest_cache`, `.mypy_cache`, `.ruff_cache`, `.tox`, `.nox`, `.eggs`, `.pytype`, `.hypothesis`
+
 ## Configuration
 
-Create an `ignyt.toml` in your project root:
+Zero configuration required. Optionally create an `ignyt.toml` in your project root:
 
 ```toml
 [ignyt]
@@ -138,9 +199,35 @@ warn = ["DEAD001"]
 skip = ["FMT002"]
 ```
 
-## Architecture
+## CI/CD Integration
 
-Ignyt is a Rust workspace with 10 crates:
+### GitHub Actions
+
+```yaml
+- name: Install Ignyt
+  run: pip install ignyt
+
+- name: Run code quality checks
+  run: ignyt check --format json src/
+```
+
+### Pre-commit Hook
+
+```bash
+#!/bin/sh
+ignyt check . && ignyt clean --dry-run
+```
+
+## Performance
+
+Ignyt is built for speed:
+
+- **Rayon** — parallel file analysis across all CPU cores
+- **rustpython-parser** — zero-copy Python AST parsing
+- **LTO + single codegen unit** — maximum binary optimization
+- **Zero dependencies** — no Python runtime overhead
+
+## Architecture
 
 ```
 crates/
@@ -155,13 +242,6 @@ crates/
   ignyt-config/       # TOML configuration parsing
   ignyt-fix/          # Auto-fix engine
 ```
-
-## Performance
-
-Ignyt uses:
-- **Rayon** for parallel file analysis across all CPU cores
-- **rustpython-parser** for zero-copy Python AST parsing
-- **LTO + single codegen unit** in release builds for maximum optimization
 
 ## License
 
